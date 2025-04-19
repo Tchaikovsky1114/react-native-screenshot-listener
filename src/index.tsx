@@ -1,7 +1,7 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
 const LINKING_ERROR =
-  `The package 'react-native-screenshot-listener' doesn't seem to be linked. Make sure: \n\n` +
+  `The package 'react-native-screenshot-listener' doesn't seem to be linked. Make sure:\n\n` +
   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n';
@@ -17,6 +17,13 @@ const ScreenshotListener = NativeModules.ScreenshotListener
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return ScreenshotListener.multiply(a, b);
+const eventEmitter = new NativeEventEmitter(ScreenshotListener);
+
+export function startScreenshotListener(callback: () => void) {
+  ScreenshotListener.startListening();
+  const subscription = eventEmitter.addListener('ScreenshotTaken', callback);
+  return () => {
+    subscription.remove();
+    ScreenshotListener.stopListening?.();
+  };
 }
