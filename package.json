@@ -1,6 +1,6 @@
 {
   "name": "react-native-screenshot-listener",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Detect screenshot events in React Native apps (iOS and Android).",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
