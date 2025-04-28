@@ -1,6 +1,5 @@
 package com.screenshotlistener
 
-import android.content.Context
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
@@ -28,9 +27,10 @@ class ScreenshotListenerModule(private val reactContext: ReactApplicationContext
                 super.onChange(selfChange, uri)
                 uri ?: return
 
-                val path = getPathFromUri(uri)
-                if (path != null && isScreenshotPath(path)) {
-                    Log.d("ScreenshotListener", "스크린샷 감지됨: $path")
+                val uriString = uri.toString()
+
+                if (isScreenshotUri(uriString)) {
+                    Log.d("ScreenshotListener", "스크린샷 감지됨: $uriString")
                     sendEvent("ScreenshotTaken", null)
                 }
             }
@@ -43,19 +43,16 @@ class ScreenshotListenerModule(private val reactContext: ReactApplicationContext
         )
     }
 
-    private fun getPathFromUri(uri: Uri): String? {
-        val projection = arrayOf(MediaStore.Images.Media.DATA)
-        reactContext.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
-            val columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-            if (cursor.moveToFirst()) {
-                return cursor.getString(columnIndex)
-            }
+    @ReactMethod
+    fun stopListening() {
+        screenshotObserver?.let {
+            reactContext.contentResolver.unregisterContentObserver(it)
+            screenshotObserver = null
         }
-        return null
     }
 
-    private fun isScreenshotPath(path: String): Boolean {
-        return path.lowercase().contains("screenshot")
+    private fun isScreenshotUri(uriString: String): Boolean {
+        return uriString.lowercase().contains("screenshot")
     }
 
     private fun sendEvent(eventName: String, params: Any?) {

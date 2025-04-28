@@ -1,4 +1,9 @@
-import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
+import {
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
+  type EmitterSubscription,
+} from 'react-native';
 
 const LINKING_ERROR =
   `The package 'react-native-screenshot-listener' doesn't seem to be linked. Make sure:\n\n` +
@@ -17,13 +22,22 @@ const ScreenshotListener = NativeModules.ScreenshotListener
       }
     );
 
-const eventEmitter = new NativeEventEmitter(ScreenshotListener);
+const screenshotEventEmitter = new NativeEventEmitter(ScreenshotListener);
+
+let subscription: EmitterSubscription | null = null;
 
 export function startScreenshotListener(callback: () => void) {
   ScreenshotListener.startListening();
-  const subscription = eventEmitter.addListener('ScreenshotTaken', callback);
-  return () => {
+  subscription = screenshotEventEmitter.addListener(
+    'ScreenshotTaken',
+    callback
+  );
+}
+
+export function stopScreenshotListener() {
+  ScreenshotListener.stopListening();
+  if (subscription) {
     subscription.remove();
-    ScreenshotListener.stopListening?.();
-  };
+    subscription = null;
+  }
 }

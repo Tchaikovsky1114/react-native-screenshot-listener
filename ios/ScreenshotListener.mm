@@ -10,7 +10,18 @@
 RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(startListening) {
-  NSLog(@"🟢 ScreenshotModule: startListening 호출됨 (iOS)");
+  NSLog(@"🟢 ScreenshotListener: startListening 호출됨 (iOS)");
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(userDidTakeScreenshot)
+                                               name:UIApplicationUserDidTakeScreenshotNotification
+                                             object:nil];
+}
+
+RCT_EXPORT_METHOD(stopListening) {
+  NSLog(@"🔴 ScreenshotListener: stopListening 호출됨 (iOS)");
+  [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                  name:UIApplicationUserDidTakeScreenshotNotification
+                                                object:nil];
 }
 
 + (BOOL)requiresMainQueueSetup {
@@ -19,21 +30,6 @@ RCT_EXPORT_METHOD(startListening) {
 
 - (NSArray<NSString *> *)supportedEvents {
   return @[@"ScreenshotTaken"];
-}
-
-- (void)startObserving {
-  NSLog(@"🟢 ScreenshotModule: Listener registered");
-  [[NSNotificationCenter defaultCenter] addObserver:self
-                                           selector:@selector(userDidTakeScreenshot)
-                                               name:UIApplicationUserDidTakeScreenshotNotification
-                                             object:nil];
-}
-
-- (void)stopObserving {
-  NSLog(@"🔴 ScreenshotModule: Listener removed");
-  [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                  name:UIApplicationUserDidTakeScreenshotNotification
-                                                object:nil];
 }
 
 - (void)userDidTakeScreenshot {
